@@ -25,8 +25,13 @@ limitations under the License.
 
   <ItemGroup>
     <PackageReference Include="MediatR" Version="9.0.0" />
+    <PackageReference Include="Microsoft.ApplicationInsights" Version="2.17.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Core" Version="1.1.0" />
     <PackageReference Include="SimpleInjector" Version="5.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Energinet.DataHub.MeteringPoints.Application\Energinet.DataHub.MeteringPoints.Application.csproj" />
   </ItemGroup>
 
 </Project>

@@ -42,6 +42,8 @@ namespace Energinet.DataHub.MeteringPoints.EntryPoints.Processing
         {
             if (context == null) throw new ArgumentNullException(nameof(context));
 
+            _logger.LogInformation(Newtonsoft.Json.JsonConvert.SerializeObject(context));
+
             if (context.BindingContext.BindingData.TryGetValue("CorrelationId", out var correlationIdObject)
                 && correlationIdObject is string correlationId)
             {

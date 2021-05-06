@@ -12,15 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System;
 using System.Threading.Tasks;
 using Energinet.DataHub.MeteringPoints.Application;
 using Energinet.DataHub.MeteringPoints.Application.UserIdentity;
 using Energinet.DataHub.MeteringPoints.Contracts;
+using Energinet.DataHub.MeteringPoints.EntryPoints.Common;
 using Energinet.DataHub.MeteringPoints.EntryPoints.Common.MediatR;
 using Energinet.DataHub.MeteringPoints.EntryPoints.Common.SimpleInjector;
 using Energinet.DataHub.MeteringPoints.Infrastructure;
 using Energinet.DataHub.MeteringPoints.Infrastructure.Transport.Protobuf.Integration;
-using MediatR;
+using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -40,6 +43,7 @@ namespace Energinet.DataHub.MeteringPoints.EntryPoints.Processing
                 {
                     options.UseMiddleware<SimpleInjectorScopedRequest>();
                     options.UseMiddleware<ServiceBusCorrelationIdMiddleware>();
+                    options.UseMiddleware<TelemetryMiddleware>();
                     options.UseMiddleware<ServiceBusUserContextMiddleware>();
                 })
                 .ConfigureServices(services =>
@@ -55,6 +59,8 @@ namespace Energinet.DataHub.MeteringPoints.EntryPoints.Processing
                     {
                         options.AddLogging();
                     });
+
+                    services.AddApplicationInsightsTelemetryWorkerService();
 
                     services.ReceiveProtobuf<MeteringPointEnvelope>(
                         config => config
@@ -72,20 +78,23 @@ namespace Energinet.DataHub.MeteringPoints.EntryPoints.Processing
             container.Register<IUserContext, UserContext>(Lifestyle.Scoped);
             container.Register<UserIdentityFactory>(Lifestyle.Singleton);
 
+            container.Register<TelemetryMiddleware>(Lifestyle.Scoped);
+            container.Register(() => new TelemetryClient(TelemetryConfiguration.CreateDefault()), Lifestyle.Singleton);
+
             // Setup pipeline behaviors
             container.BuildMediator(
                 new[]
                 {
                     typeof(CreateMeteringPoint).Assembly,
                 },
-                new[]
+                new Type[]
                 {
-                    typeof(InputValidationBehavior<,>),
-                    typeof(AuthorizationBehavior<,>),
-                    typeof(BusinessProcessResponderBehavior<,>),
-                    typeof(IntegrationEventsDispatchBehavior<,>),
-                    typeof(ValidationReportsBehavior<,>),
-                    typeof(UnitOfWorkBehavior<,>),
+                    // typeof(InputValidationBehavior<,>),
+                    // typeof(AuthorizationBehavior<,>),
+                    // typeof(BusinessProcessResponderBehavior<,>),
+                    // typeof(IntegrationEventsDispatchBehavior<,>),
+                    // typeof(ValidationReportsBehavior<,>),
+                    // typeof(UnitOfWorkBehavior<,>),
                 });
 
             container.Verify();

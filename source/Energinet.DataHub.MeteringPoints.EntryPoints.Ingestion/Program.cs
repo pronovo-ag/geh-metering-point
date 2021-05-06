@@ -19,10 +19,13 @@ using Energinet.DataHub.MeteringPoints.Application;
 using Energinet.DataHub.MeteringPoints.Application.Transport;
 using Energinet.DataHub.MeteringPoints.Application.UserIdentity;
 using Energinet.DataHub.MeteringPoints.Contracts;
+using Energinet.DataHub.MeteringPoints.EntryPoints.Common;
 using Energinet.DataHub.MeteringPoints.EntryPoints.Common.SimpleInjector;
 using Energinet.DataHub.MeteringPoints.Infrastructure;
 using Energinet.DataHub.MeteringPoints.Infrastructure.Ingestion;
 using Energinet.DataHub.MeteringPoints.Infrastructure.Transport.Protobuf.Integration;
+using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -41,6 +44,7 @@ namespace Energinet.DataHub.MeteringPoints.EntryPoints.Ingestion
                 {
                     options.UseMiddleware<SimpleInjectorScopedRequest>();
                     options.UseMiddleware<HttpCorrelationIdMiddleware>();
+                    options.UseMiddleware<TelemetryMiddleware>();
                     options.UseMiddleware<HttpUserContextMiddleware>();
                 })
                 .ConfigureServices(services =>
@@ -57,6 +61,8 @@ namespace Energinet.DataHub.MeteringPoints.EntryPoints.Ingestion
                         options.AddLogging();
                     });
 
+                    services.AddApplicationInsightsTelemetryWorkerService();
+
                     services.SendProtobuf<MeteringPointEnvelope>();
                 })
                 .Build()
@@ -68,6 +74,8 @@ namespace Energinet.DataHub.MeteringPoints.EntryPoints.Ingestion
             container.Register<ICorrelationContext, CorrelationContext>(Lifestyle.Scoped);
             container.Register<HttpUserContextMiddleware>(Lifestyle.Scoped);
             container.Register<IUserContext, UserContext>(Lifestyle.Scoped);
+            container.Register<TelemetryMiddleware>(Lifestyle.Scoped);
+            container.Register(() => new TelemetryClient(TelemetryConfiguration.CreateDefault()), Lifestyle.Singleton);
 
             container.Register<MessageDispatcher, InternalDispatcher>();
             container.Register<InternalServiceBus>();
