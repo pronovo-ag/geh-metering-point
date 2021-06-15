@@ -24,15 +24,15 @@ on:
       - .github/workflows/infrastructure-cd.yml
   workflow_dispatch: {}
 env:
-  ORGANISATION_NAME: endk
-  PROJECT_NAME: meteringpoint
+  ORGANISATION_NAME: pno
+  PROJECT_NAME: meteringp
 
 jobs:
   infra_deploy_development:
-    name: Deploy infrastructure to rg-DataHub-MeteringPoint-U
+    name: Deploy infrastructure to rg-EnergyHub-MeteringPoint-U
     runs-on: ubuntu-latest
     environment:
-      name: rg-DataHub-MeteringPoint-U
+      name: rg-EnergyHub-MeteringPoint-U
     steps:
       - name: Checkout code
         uses: actions/checkout@master
@@ -57,108 +57,7 @@ jobs:
           PROJECT_NAME: ${{ env.PROJECT_NAME }}
           ORGANISATION_NAME: ${{ env.ORGANISATION_NAME }}
           ENVIRONMENT_SHORT: u
-          ENVIRONMENT_LONG: rg-DataHub-MeteringPoint-U
+          ENVIRONMENT_LONG: rg-EnergyHub-MeteringPoint-U
           ENVIRONMENT_NAME: Development
           TERRAFORM_BACKEND_FILE_PATH: "./build/infrastructure/backend.tf"
   
-  infra_deploy_test:
-    name: Deploy infrastructure to rg-DataHub-MeteringPoint-T
-    needs: infra_deploy_development
-    runs-on: ubuntu-latest
-    environment:
-      name: rg-DataHub-MeteringPoint-T
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@master
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v1.2.1
-        with:
-          terraform_wrapper: false
-
-      - name: Terraform CD
-        uses: ./.github/actions/terraform-cd
-        with:
-          SECRETS_SHARED_RESOURCES_KEYVAULT_NAME: ${{ secrets.SHARED_RESOURCES_KEYVAULT_NAME }}
-          SECRETS_SHARED_RESOURCES_RESOURCE_GROUP_NAME: ${{ secrets.SHARED_RESOURCES_RESOURCE_GROUP_NAME }}
-          SECRETS_SHARED_RESOURCES_SQL_SERVER_NAME: ${{ secrets.SHARED_RESOURCES_SQL_SERVER_NAME }}
-          SECRETS_PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
-          SECRETS_TENANT_ID: ${{ secrets.TENANT_ID }}
-          SECRETS_SPN_ID: ${{ secrets.SPN_ID }}
-          SECRETS_SPN_OBJECT_ID: ${{ secrets.SPN_OBJECT_ID }}
-          SECRETS_SPN_SECRET: ${{ secrets.SPN_SECRET }}
-          SECRETS_SUBSCRIPTION_ID: ${{ secrets.SUBSCRIPTION_ID }}
-          PROJECT_NAME: ${{ env.PROJECT_NAME }}
-          ORGANISATION_NAME: ${{ env.ORGANISATION_NAME }}
-          ENVIRONMENT_SHORT: t
-          ENVIRONMENT_LONG: rg-DataHub-MeteringPoint-T
-          ENVIRONMENT_NAME: Test
-          TERRAFORM_BACKEND_FILE_PATH: "./build/infrastructure/backend.tf"
-
-  infra_deploy_preprod:
-    name: Deploy infrastructure to rg-DataHub-MeteringPoint-B
-    needs: infra_deploy_test
-    runs-on: ubuntu-latest
-    environment:
-      name: rg-DataHub-MeteringPoint-B
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@master
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v1.2.1
-        with:
-          terraform_wrapper: false
-
-      - name: Terraform CD
-        uses: ./.github/actions/terraform-cd
-        with:
-          SECRETS_SHARED_RESOURCES_KEYVAULT_NAME: ${{ secrets.SHARED_RESOURCES_KEYVAULT_NAME }}
-          SECRETS_SHARED_RESOURCES_RESOURCE_GROUP_NAME: ${{ secrets.SHARED_RESOURCES_RESOURCE_GROUP_NAME }}
-          SECRETS_SHARED_RESOURCES_SQL_SERVER_NAME: ${{ secrets.SHARED_RESOURCES_SQL_SERVER_NAME }}
-          SECRETS_PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
-          SECRETS_TENANT_ID: ${{ secrets.TENANT_ID }}
-          SECRETS_SPN_ID: ${{ secrets.SPN_ID }}
-          SECRETS_SPN_OBJECT_ID: ${{ secrets.SPN_OBJECT_ID }}
-          SECRETS_SPN_SECRET: ${{ secrets.SPN_SECRET }}
-          SECRETS_SUBSCRIPTION_ID: ${{ secrets.SUBSCRIPTION_ID }}
-          PROJECT_NAME: ${{ env.PROJECT_NAME }}
-          ORGANISATION_NAME: ${{ env.ORGANISATION_NAME }}
-          ENVIRONMENT_SHORT: b
-          ENVIRONMENT_LONG: rg-DataHub-MeteringPoint-B
-          ENVIRONMENT_NAME: Preprod
-          TERRAFORM_BACKEND_FILE_PATH: "./build/infrastructure/backend.tf"
-
-  infra_deploy_prod:
-    name: Deploy infrastructure to rg-DataHub-MeteringPoint-P
-    needs: infra_deploy_preprod
-    runs-on: ubuntu-latest
-    environment:
-      name: rg-DataHub-MeteringPoint-P
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@master
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v1.2.1
-        with:
-          terraform_wrapper: false
-      
-      - name: Terraform CD
-        uses: ./.github/actions/terraform-cd
-        with:
-          SECRETS_SHARED_RESOURCES_KEYVAULT_NAME: ${{ secrets.SHARED_RESOURCES_KEYVAULT_NAME }}
-          SECRETS_SHARED_RESOURCES_RESOURCE_GROUP_NAME: ${{ secrets.SHARED_RESOURCES_RESOURCE_GROUP_NAME }}
-          SECRETS_SHARED_RESOURCES_SQL_SERVER_NAME: ${{ secrets.SHARED_RESOURCES_SQL_SERVER_NAME }}
-          SECRETS_PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
-          SECRETS_TENANT_ID: ${{ secrets.TENANT_ID }}
-          SECRETS_SPN_ID: ${{ secrets.SPN_ID }}
-          SECRETS_SPN_OBJECT_ID: ${{ secrets.SPN_OBJECT_ID }}
-          SECRETS_SPN_SECRET: ${{ secrets.SPN_SECRET }}
-          SECRETS_SUBSCRIPTION_ID: ${{ secrets.SUBSCRIPTION_ID }}
-          PROJECT_NAME: ${{ env.PROJECT_NAME }}
-          ORGANISATION_NAME: ${{ env.ORGANISATION_NAME }}
-          ENVIRONMENT_SHORT: p
-          ENVIRONMENT_LONG: rg-DataHub-MeteringPoint-P
-          ENVIRONMENT_NAME: Prod
-          TERRAFORM_BACKEND_FILE_PATH: "./build/infrastructure/backend.tf"

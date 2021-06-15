@@ -52,7 +52,7 @@ runs:
     - name: Set Environment Secrets
       shell: bash
       run: |  
-        echo "TERRAFORM_STORAGE_NAME=tfstate${{ inputs.PROJECT_NAME }}${{ inputs.ENVIRONMENT_SHORT }}" >> $GITHUB_ENV
+        echo "TERRAFORM_STORAGE_NAME=tfstate${{ inputs.PROJECT_NAME }}${{ inputs.ORGANISATION_NAME }}${{ inputs.ENVIRONMENT_SHORT }}" >> $GITHUB_ENV
         echo "ARM_TENANT_ID=${{ inputs.SECRETS_TENANT_ID }}" >> $GITHUB_ENV
         echo "ARM_CLIENT_ID=${{ inputs.SECRETS_SPN_ID }}" >> $GITHUB_ENV
         echo "ARM_CLIENT_OBJECT_ID=${{ inputs.SECRETS_SPN_OBJECT_ID }}" >> $GITHUB_ENV
@@ -79,7 +79,7 @@ runs:
       shell: bash
       id: state-storage-exists
       run: |
-        storage_exists=$(az storage account check-name --name 'tfstate${{ inputs.PROJECT_NAME }}${{ inputs.ENVIRONMENT_SHORT }}' | python3 -c "import sys, json; print(not json.load(sys.stdin)['nameAvailable'])")
+        storage_exists=$(az storage account check-name --name '${{ env.TERRAFORM_STORAGE_NAME }}' | python3 -c "import sys, json; print(not json.load(sys.stdin)['nameAvailable'])")
         if [ "$storage_exists" = True ]; then
           echo "Storage exists";
           exit;
